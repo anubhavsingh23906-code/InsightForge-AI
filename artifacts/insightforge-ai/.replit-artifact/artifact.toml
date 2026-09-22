@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "InsightForge AI"
+description = "An AI-powered data intelligence workspace that turns natural-language questions into validated analysis, explainable insights, and interactive reports for hackathon teams and analysts."
+version = "1.0.0"
+id = "artifacts/insightforge-ai"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23162
+
+[services.development]
+run = "pnpm --filter @workspace/insightforge-ai run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/insightforge-ai", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/insightforge-ai/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23162"
+BASE_PATH = "/"

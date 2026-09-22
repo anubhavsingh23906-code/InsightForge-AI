@@ -3,20 +3,23 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: InsightForge AI data intelligence API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: dashboard
+  - name: datasets
+  - name: analyses
+  - name: reports
+  - name: simulation
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +27,507 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get the InsightForge dashboard overview
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+  /data-sources:
+    get:
+      operationId: getDataSources
+      tags: [datasets]
+      summary: List available data sources
+      responses:
+        "200":
+          description: Data sources
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DataSource"
+  /datasets:
+    get:
+      operationId: getDatasets
+      tags: [datasets]
+      summary: List datasets
+      responses:
+        "200":
+          description: Datasets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Dataset"
+    post:
+      operationId: createDataset
+      tags: [datasets]
+      summary: Register an uploaded dataset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DatasetInput"
+      responses:
+        "201":
+          description: Dataset created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dataset"
+  /datasets/{id}:
+    get:
+      operationId: getDataset
+      tags: [datasets]
+      summary: Get a dataset preview
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Dataset
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DatasetDetail"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteDataset
+      tags: [datasets]
+      summary: Delete a dataset
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Dataset deleted
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /analyses:
+    get:
+      operationId: getAnalyses
+      tags: [analyses]
+      summary: List analysis history
+      responses:
+        "200":
+          description: Analyses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AnalysisSummary"
+    post:
+      operationId: createAnalysis
+      tags: [analyses]
+      summary: Create an analysis from a natural-language question
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalysisInput"
+      responses:
+        "201":
+          description: Completed analysis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Analysis"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /analyses/{id}:
+    get:
+      operationId: getAnalysis
+      tags: [analyses]
+      summary: Get analysis results
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200":
+          description: Analysis
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Analysis"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    delete:
+      operationId: deleteAnalysis
+      tags: [analyses]
+      summary: Delete an analysis
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "204":
+          description: Analysis deleted
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /analysis:
+    post:
+      operationId: analyzeQuery
+      tags: [analyses]
+      summary: Run an analysis in demo mode
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalysisInput"
+      responses:
+        "201":
+          description: Analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Analysis"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+  /analyses/{id}/follow-up:
+    post:
+      operationId: askAnalysisFollowUp
+      tags: [analyses]
+      summary: Ask a scoped follow-up question
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FollowUpInput"
+      responses:
+        "200":
+          description: Follow-up answer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FollowUp"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /reports:
+    post:
+      operationId: createReport
+      tags: [reports]
+      summary: Generate a report for an analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReportInput"
+      responses:
+        "201":
+          description: Report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Report"
+  /simulation:
+    post:
+      operationId: runSimulation
+      tags: [simulation]
+      summary: Run a deterministic what-if simulation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SimulationInput"
+      responses:
+        "200":
+          description: Simulation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Simulation"
 components:
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
   schemas:
     HealthStatus:
       type: object
       properties:
         status:
           type: string
-      required:
-        - status
-
+      required: [status]
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+    Dashboard:
+      type: object
+      required: [stats, recentAnalyses, featuredDatasets, activity]
+      properties:
+        stats:
+          type: object
+          required: [analysesCompleted, dataSources, recordsAnalyzed, averageQuality]
+          properties:
+            analysesCompleted: { type: integer }
+            dataSources: { type: integer }
+            recordsAnalyzed: { type: integer }
+            averageQuality: { type: number }
+        recentAnalyses:
+          type: array
+          items: { $ref: "#/components/schemas/AnalysisSummary" }
+        featuredDatasets:
+          type: array
+          items: { $ref: "#/components/schemas/Dataset" }
+        activity:
+          type: array
+          items: { $ref: "#/components/schemas/Activity" }
+    Activity:
+      type: object
+      required: [id, label, detail, time, type]
+      properties:
+        id: { type: string }
+        label: { type: string }
+        detail: { type: string }
+        time: { type: string }
+        type: { type: string }
+    DataSource:
+      type: object
+      required: [id, name, type, status, updated, records, quality, description]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        type: { type: string }
+        status: { type: string }
+        updated: { type: string }
+        records: { type: integer }
+        quality: { type: number }
+        description: { type: string }
+    Dataset:
+      type: object
+      required: [id, name, source, category, rows, columns, quality, updated, synthetic]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        source: { type: string }
+        category: { type: string }
+        rows: { type: integer }
+        columns: { type: integer }
+        quality: { type: number }
+        updated: { type: string }
+        synthetic: { type: boolean }
+    DatasetInput:
+      type: object
+      required: [name, source, category, rows, columns, quality]
+      properties:
+        name: { type: string, minLength: 1 }
+        source: { type: string }
+        category: { type: string }
+        rows: { type: integer, minimum: 0 }
+        columns: { type: integer, minimum: 0 }
+        quality: { type: number, minimum: 0, maximum: 100 }
+    DatasetDetail:
+      allOf:
+        - $ref: "#/components/schemas/Dataset"
+        - type: object
+          required: [fields, preview]
+          properties:
+            fields:
+              type: array
+              items: { type: string }
+            preview:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+    AnalysisInput:
+      type: object
+      required: [question]
+      properties:
+        question: { type: string, minLength: 4, maxLength: 500 }
+        datasetId: { type: ["string", "null"] }
+    AnalysisSummary:
+      type: object
+      required: [id, question, status, createdAt, quality, sources, records]
+      properties:
+        id: { type: string }
+        question: { type: string }
+        status: { type: string }
+        createdAt: { type: string }
+        quality: { type: number }
+        sources:
+          type: array
+          items: { type: string }
+        records: { type: integer }
+    Analysis:
+      allOf:
+        - $ref: "#/components/schemas/AnalysisSummary"
+        - type: object
+          required: [plan, steps, insights, charts, qualityDetails, evidence, geographic, whatIf]
+          properties:
+            plan: { $ref: "#/components/schemas/AnalysisPlan" }
+            steps:
+              type: array
+              items: { $ref: "#/components/schemas/AnalysisStep" }
+            insights:
+              type: array
+              items: { $ref: "#/components/schemas/Insight" }
+            charts:
+              type: array
+              items: { $ref: "#/components/schemas/Chart" }
+            qualityDetails: { $ref: "#/components/schemas/QualityDetails" }
+            evidence:
+              type: array
+              items: { $ref: "#/components/schemas/Evidence" }
+            geographic: { type: boolean }
+            whatIf: { $ref: "#/components/schemas/Simulation" }
+    AnalysisPlan:
+      type: object
+      required: [goal, requiredData, operations, visualizations]
+      properties:
+        goal: { type: string }
+        requiredData:
+          type: array
+          items: { type: string }
+        operations:
+          type: array
+          items: { type: string }
+        visualizations:
+          type: array
+          items: { type: string }
+    AnalysisStep:
+      type: object
+      required: [id, label, status, detail]
+      properties:
+        id: { type: string }
+        label: { type: string }
+        status: { type: string }
+        detail: { type: string }
+    Insight:
+      type: object
+      required: [id, title, explanation, confidence, metric, comparison, evidenceId]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        explanation: { type: string }
+        confidence: { type: number }
+        metric: { type: string }
+        comparison: { type: string }
+        evidenceId: { type: string }
+    Chart:
+      type: object
+      required: [id, title, type, data, xKey, yKey, note]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        type: { type: string }
+        xKey: { type: string }
+        yKey: { type: string }
+        note: { type: string }
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+    QualityDetails:
+      type: object
+      required: [rows, columns, missing, duplicates, invalid, outliers, explanation]
+      properties:
+        rows: { type: integer }
+        columns: { type: integer }
+        missing: { type: number }
+        duplicates: { type: number }
+        invalid: { type: number }
+        outliers: { type: number }
+        explanation: { type: string }
+    Evidence:
+      type: object
+      required: [id, insight, dataset, records, calculation, source, fields, timestamp]
+      properties:
+        id: { type: string }
+        insight: { type: string }
+        dataset: { type: string }
+        records: { type: integer }
+        calculation: { type: string }
+        source: { type: string }
+        fields:
+          type: array
+          items: { type: string }
+        timestamp: { type: string }
+    FollowUpInput:
+      type: object
+      required: [question]
+      properties:
+        question: { type: string, minLength: 2, maxLength: 300 }
+    FollowUp:
+      type: object
+      required: [answer, context, supportingData]
+      properties:
+        answer: { type: string }
+        context: { type: string }
+        supportingData:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+    ReportInput:
+      type: object
+      required: [analysisId, format]
+      properties:
+        analysisId: { type: string }
+        format: { type: string, enum: [json, csv, print] }
+    Report:
+      type: object
+      required: [id, analysisId, format, title, generatedAt, sections]
+      properties:
+        id: { type: string }
+        analysisId: { type: string }
+        format: { type: string }
+        title: { type: string }
+        generatedAt: { type: string }
+        sections:
+          type: array
+          items:
+            type: object
+            required: [title, content]
+            properties:
+              title: { type: string }
+              content: { type: string }
+    SimulationInput:
+      type: object
+      required: [baseline, changePercent]
+      properties:
+        baseline: { type: number, minimum: 0 }
+        changePercent: { type: number, minimum: -100, maximum: 1000 }
+        label: { type: string }
+    Simulation:
+      type: object
+      required: [label, current, simulated, difference, percent]
+      properties:
+        label: { type: string }
+        current: { type: number }
+        simulated: { type: number }
+        difference: { type: number }
+        percent: { type: number }

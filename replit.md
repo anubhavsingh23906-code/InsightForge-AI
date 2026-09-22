@@ -1,6 +1,6 @@
-# [Project name]
+# InsightForge AI
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+InsightForge AI turns plain-English data questions into transparent, evidence-backed analysis.
 
 ## Run & Operate
 
@@ -22,15 +22,26 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/insightforge-ai/src/App.tsx` — responsive dashboard, analysis workspace, results, history, datasets, sources, and reports.
+- `artifacts/insightforge-ai/src/index.css` — shared InsightForge visual theme and responsive styling.
+- `artifacts/api-server/src/routes/insightforge.ts` — deterministic Demo Mode data engine and API routes.
+- `lib/api-spec/openapi.yaml` — source of truth for generated API hooks and validation schemas.
+- `lib/api-client-react/src/generated/` — generated React Query hooks.
+- `.env.example` — optional AI/database variables and the workflow secret name.
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The first build uses deterministic synthetic datasets in Demo Mode so every result is reproducible and clearly labelled rather than pretending to be live data.
+- The API contract is OpenAPI-first; client hooks and server validators are generated from `lib/api-spec/openapi.yaml`.
+- Analysis results carry an explicit plan, execution steps, quality metrics, insight evidence, and calculation details to keep the workflow explainable.
+- The server keeps demo state in memory for the MVP; PostgreSQL is reserved for the persistence stage.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Ask a natural-language question about synthetic air quality, parking, or weather data.
+- Review a visible agent execution timeline, structured plan, charts, insights, data-quality metrics, and provenance evidence.
+- Browse analysis history, dataset previews, source inventory, reports, follow-up questions, and deterministic what-if simulations.
+- The UI supports desktop and mobile layouts with a responsive navigation shell.
 
 ## User preferences
 
@@ -38,7 +49,9 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Run `pnpm --filter @workspace/api-spec run codegen` after changing the OpenAPI contract.
+- The frontend and API are separate managed workflows; restart both after changing their run commands or generated contracts.
+- Demo analyses are in-memory and reset when the API workflow restarts.
 
 ## Pointers
 
